@@ -5,8 +5,9 @@
 var q = new URLSearchParams(location.search), m = document.getElementById('msg'), st = null;
 try { st = sessionStorage.getItem('tt_state'); } catch(e) {}
 if (q.get('code') && (!st || st === q.get('state'))) {
-  location.replace('http://192.168.0.40:8799/callback' + location.search);  // servidor do titular troca o código pelo token
-  setTimeout(function(){ m.textContent = 'Se nada aconteceu, conecte no Wi-Fi de casa e tente de novo.'; }, 8000);
+  var alvo = 'http://192.168.0.40:8799/callback' + location.search;  // servidor do titular troca o código pelo token
+  m.innerHTML = 'Conta autorizada. <br><br><a class="btn r" id="ir" href="' + alvo + '">Concluir conexão</a>';
+  setTimeout(function(){ location.replace(alvo); }, 300);
 } else if (q.get('code')) {
   m.textContent = 'Retorno inválido (state diferente). Volte e clique em Entrar com TikTok de novo.';
 } else {
