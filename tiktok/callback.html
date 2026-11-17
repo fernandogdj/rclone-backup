@@ -1,14 +1,17 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Autorização TikTok</title><style>body{font-family:system-ui,sans-serif;max-width:680px;margin:40px auto;padding:0 16px;line-height:1.6;color:#222;background:#fff}code{background:#f2f2f2;padding:2px 6px;border-radius:4px;word-break:break-all}</style></head><body>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Autorização TikTok</title><style>body{font-family:system-ui,sans-serif;max-width:680px;margin:40px auto;padding:0 16px;line-height:1.6;color:#222;background:#fff}.btn{display:inline-block;background:#000;color:#fff;border:0;border-radius:8px;padding:12px 20px;font-size:16px;text-decoration:none;cursor:pointer}.btn.r{background:#fe2c55}.caixa{border:1px solid #ddd;border-radius:10px;padding:16px;margin:20px 0}.conta{display:flex;align-items:center;gap:12px}.conta img{width:56px;height:56px;border-radius:50%}.erro{color:#b00020}.ok{color:#0a7a32}</style></head><body>
 <h1>Autorização TikTok</h1>
-<p id="msg">Enviando a autorização para o servidor…</p>
+<p id="msg">Conectando a conta…</p>
 <script>
-var q = location.search;
-if (q.indexOf('code=') >= 0) {
-  // o servidor só é acessível na rede de casa
-  location.replace('http://192.168.0.40:8799/callback' + q);
-  setTimeout(function(){ document.getElementById('msg').innerHTML = 'Se nada aconteceu, conecte no Wi-Fi de casa e abra o link de autorização de novo.'; }, 6000);
+var q = new URLSearchParams(location.search), m = document.getElementById('msg'), st = null;
+try { st = sessionStorage.getItem('tt_state'); } catch(e) {}
+if (q.get('code') && (!st || st === q.get('state'))) {
+  location.replace('http://192.168.0.40:8799/callback' + location.search);  // servidor do titular troca o código pelo token
+  setTimeout(function(){ m.textContent = 'Se nada aconteceu, conecte no Wi-Fi de casa e tente de novo.'; }, 8000);
+} else if (q.get('code')) {
+  m.textContent = 'Retorno inválido (state diferente). Volte e clique em Entrar com TikTok de novo.';
 } else {
-  document.getElementById('msg').textContent = 'Autorização não recebida' + (q ? ' (' + decodeURIComponent(q.slice(1)) + ')' : '') + '.';
+  m.textContent = 'Autorização não concluída' + (q.get('error_description') ? ': ' + q.get('error_description') : (q.get('error') ? ': ' + q.get('error') : '.'));
 }
 </script>
+<p><a href="index.html">Voltar</a></p>
 </body></html>

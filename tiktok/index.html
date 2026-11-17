@@ -1,6 +1,33 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Achados Publicador</title><style>body{font-family:system-ui,sans-serif;max-width:680px;margin:40px auto;padding:0 16px;line-height:1.6;color:#222;background:#fff}code{background:#f2f2f2;padding:2px 6px;border-radius:4px;word-break:break-all}</style></head><body>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Achados Publicador</title><style>body{font-family:system-ui,sans-serif;max-width:680px;margin:40px auto;padding:0 16px;line-height:1.6;color:#222;background:#fff}.btn{display:inline-block;background:#000;color:#fff;border:0;border-radius:8px;padding:12px 20px;font-size:16px;text-decoration:none;cursor:pointer}.btn.r{background:#fe2c55}.caixa{border:1px solid #ddd;border-radius:10px;padding:16px;margin:20px 0}.conta{display:flex;align-items:center;gap:12px}.conta img{width:56px;height:56px;border-radius:50%}.erro{color:#b00020}.ok{color:#0a7a32}</style></head><body>
 <h1>Achados Publicador</h1>
-<p>Ferramenta de uso interno e pessoal que envia, para a caixa de rascunhos do TikTok do próprio titular, os vídeos curtos de ofertas que ele mesmo produz. O titular revisa e publica cada vídeo manualmente no aplicativo do TikTok.</p>
-<p>Não é um serviço público e não atende outros usuários.</p>
+<p>Ferramenta de uso interno e pessoal que envia, para a caixa de rascunhos do TikTok do próprio titular, os vídeos curtos de ofertas que ele mesmo produz. O titular revisa e publica cada vídeo manualmente no aplicativo do TikTok. Não é um serviço público.</p>
+<div class="caixa" id="painel"></div>
 <p><a href="privacidade.html">Política de privacidade</a> · <a href="termos.html">Termos de uso</a></p>
+<script>
+var CLIENT_KEY = 'sbaw36oephekfgqfs3';
+var REDIRECT = 'https://fernandogdj.github.io/rclone-backup/tiktok/callback.html';
+var SERVIDOR = 'http://192.168.0.40:8799';  // servidor do titular (rede local)
+var q = new URLSearchParams(location.search), p = document.getElementById('painel');
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function entrar(){
+  var st = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  try { sessionStorage.setItem('tt_state', st); } catch(e) {}
+  location.href = 'https://www.tiktok.com/v2/auth/authorize/?' + new URLSearchParams({client_key: CLIENT_KEY,
+    scope: 'user.info.basic,video.upload', response_type: 'code', redirect_uri: REDIRECT, state: st}).toString();
+}
+var conta = '';
+try { conta = q.get('conectado') !== null ? JSON.stringify({n: q.get('conectado'), a: q.get('avatar')}) : (sessionStorage.getItem('tt_conta') || ''); if (q.get('conectado') !== null) sessionStorage.setItem('tt_conta', conta); } catch(e) {}
+var html = '';
+if (q.get('erro')) html += '<p class="erro">Erro: ' + esc(q.get('erro')) + '</p>';
+if (conta) {
+  var c = JSON.parse(conta);
+  html += '<div class="conta">' + (c.a ? '<img src="' + esc(c.a) + '" alt="">' : '') + '<div><b>Conta conectada:</b><br>' + esc(c.n) + '</div></div>';
+  if (q.get('enviado')) html += '<p class="ok">✅ Vídeo enviado para os rascunhos do TikTok. Abra o app do TikTok: ele aparece na notificação / caixa de entrada para você revisar, escrever a legenda e publicar.</p>';
+  html += '<p><a class="btn r" href="' + SERVIDOR + '/enviar">Enviar vídeo de oferta aos rascunhos</a></p>';
+  html += '<p><a href="#" onclick="sessionStorage.removeItem(\'tt_conta\');location.href=location.pathname;return false">Desconectar desta página</a></p>';
+} else {
+  html += '<p>Conecte a sua conta do TikTok para enviar os vídeos aos seus rascunhos.</p><p><button class="btn" onclick="entrar()">Entrar com TikTok</button></p>';
+}
+p.innerHTML = html;
+</script>
 </body></html>
